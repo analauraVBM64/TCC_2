@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, Alert } from 'react-native';
-import supabase from '../BD/supabaseClient';
+import { supabase } from '../BD/supabaseClient'; // Certifique-se de que supabase está exportado corretamente de supabaseClient.js
 
 const LoginScreen = ({ navigation }) => {
   const [input, setInput] = useState(''); // Pode ser e-mail ou nome de usuário

@@ -9,20 +9,48 @@ const CadastroScreen = ({ navigation }) => {
   const [password, setPassword] = useState('');
 
   const handleRegister = async () => {
-    if (!name || !username || !email || !password) {
+    if (!name.trim() || !username.trim() || !email.trim() || !password.trim()) {
       Alert.alert('Erro', 'Todos os campos são obrigatórios.');
       return;
     }
 
     try {
-      // Cria o usuário no sistema de autenticação do Supabase
+      console.log('Validando se o usuário já existe no banco...');
+
+      // Verificar se o e-mail já está registrado
+      const { data: emailExists } = await supabase
+        .from('users')
+        .select('*')
+        .eq('email', email)
+        .single();
+
+      if (emailExists) {
+        Alert.alert('Erro', 'E-mail já cadastrado. Use outro e-mail.');
+        return;
+      }
+
+      // Verificar se o nome de usuário já está registrado
+      const { data: usernameExists } = await supabase
+        .from('users')
+        .select('*')
+        .eq('username', username)
+        .single();
+
+      if (usernameExists) {
+        Alert.alert('Erro', 'Nome de usuário já cadastrado. Escolha outro.');
+        return;
+      }
+
+      console.log('Iniciando cadastro do usuário...');
+
+      // Criação do usuário no sistema de autenticação do Supabase
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
       });
 
       if (authError) {
-        Alert.alert('Erro', authError.message);
+        Alert.alert('Erro no cadastro', authError.message);
         return;
       }
 
@@ -33,13 +61,13 @@ const CadastroScreen = ({ navigation }) => {
         return;
       }
 
-      // Salva informações adicionais na tabela "users"
+      // Inserindo dados adicionais na tabela "users"
       const { error: dbError } = await supabase.from('users').insert([
         { id: userId, name, username, email },
       ]);
 
       if (dbError) {
-        Alert.alert('Erro', `Erro ao salvar informações: ${dbError.message}`);
+        Alert.alert('Erro ao salvar informações adicionais', dbError.message);
         return;
       }
 

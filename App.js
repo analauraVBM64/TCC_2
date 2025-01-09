@@ -1,4 +1,6 @@
+import 'react-native-url-polyfill/auto';
 import React from 'react';
+import 'react-native-get-random-values';
 import { View, Text, StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
