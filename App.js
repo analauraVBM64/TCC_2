@@ -85,7 +85,7 @@ const App = () => {
           name="Main"
           component={MainTabs}
           options={{
-            headerShown: false, // Remove cabeçalho para Tabs
+            headerShown: false, 
           }}
         />
       </Stack.Navigator>
