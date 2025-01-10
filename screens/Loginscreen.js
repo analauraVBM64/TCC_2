@@ -1,57 +1,55 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, Button, StyleSheet, Alert } from 'react-native';
-import { supabase } from '../BD/supabaseClient'; // Certifique-se de que supabase está exportado corretamente de supabaseClient.js
+import { supabase } from '../BD/supabaseClient';
 
 const LoginScreen = ({ navigation }) => {
-  const [input, setInput] = useState(''); // Pode ser e-mail ou nome de usuário
+  const [input, setInput] = useState('');
   const [password, setPassword] = useState('');
 
   const handleLogin = async () => {
-    if (!input || !password) {
+    if (!input.trim() || !password.trim()) {
       Alert.alert('Erro', 'Todos os campos são obrigatórios.');
       return;
     }
 
     try {
-      let data, error;
+      let authResponse;
 
-      // Verifica se o input é um e-mail (baseado na presença de "@")
       if (input.includes('@')) {
         // Login com e-mail
-        ({ data, error } = await supabase.auth.signInWithPassword({
-          email: input,
-          password,
-        }));
+        authResponse = await supabase.auth.signInWithPassword({
+          email: input.trim(),
+          password: password.trim(),
+        });
       } else {
         // Login com nome de usuário
-        const { data: userData, error: userError } = await supabase
-          .from('users') // Substitua "users" pelo nome correto da tabela
+        const { data: user, error: userError } = await supabase
+          .from('users')
           .select('email')
-          .eq('username', input)
+          .eq('username', input.trim())
           .single();
 
-        if (userError || !userData) {
+        if (userError || !user) {
           Alert.alert('Erro', 'Nome de usuário não encontrado.');
           return;
         }
 
-        // Realiza login com o e-mail associado ao nome de usuário
-        ({ data, error } = await supabase.auth.signInWithPassword({
-          email: userData.email,
-          password,
-        }));
+        authResponse = await supabase.auth.signInWithPassword({
+          email: user.email,
+          password: password.trim(),
+        });
       }
 
-      if (error) {
-        Alert.alert('Erro', error.message);
+      if (authResponse.error) {
+        Alert.alert('Erro', authResponse.error.message || 'Erro desconhecido.');
         return;
       }
 
       Alert.alert('Sucesso', 'Login realizado com sucesso!');
       navigation.navigate('Feed');
     } catch (err) {
-      Alert.alert('Erro', 'Algo deu errado. Tente novamente.');
       console.error('Erro no login:', err);
+      Alert.alert('Erro inesperado', 'Tente novamente mais tarde.');
     }
   };
 
