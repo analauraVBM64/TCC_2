@@ -59,7 +59,7 @@ const CadastroScreen = ({ navigation }) => {
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
-      });
+      }); //pq aqui só tem email e a senha se era para ter usuario 
 
       if (authError) {
         Alert.alert('Erro no cadastro', authError.message);
@@ -119,13 +119,14 @@ const CadastroScreen = ({ navigation }) => {
       <Text style={styles.label}>Senha</Text>
       <TextInput
         style={styles.input}
-        placeholder="Digite sua senha"
+        placeholder="Digite sua senha com no minimo 6 digitos"
         value={password}
         onChangeText={setPassword}
         secureTextEntry
       />
+      //aqui era para terminar de cadastrar e ir para a pagina de  login
       <View style={styles.buttonContainer}>
-        <Button title="Cadastrar" onPress={handleRegister} color="#2a9d8f" />
+        <Button title="Cadastrar" onPress={handleRegister} color="#2a9d8f" /> 
       </View>
     </View>
   );

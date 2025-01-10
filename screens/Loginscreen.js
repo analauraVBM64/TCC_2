@@ -20,7 +20,7 @@ const LoginScreen = ({ navigation }) => {
         authResponse = await supabase.auth.signInWithPassword({
           email: input.trim(),
           password: password.trim(),
-        });
+        }); //email não está vereficando
       } else {
         // Login com nome de usuário
         const { data: user, error: userError } = await supabase
@@ -32,7 +32,7 @@ const LoginScreen = ({ navigation }) => {
         if (userError || !user) {
           Alert.alert('Erro', 'Nome de usuário não encontrado.');
           return;
-        }
+        }// esse com usuario não esta funcionando
 
         authResponse = await supabase.auth.signInWithPassword({
           email: user.email,
@@ -51,7 +51,7 @@ const LoginScreen = ({ navigation }) => {
       console.error('Erro no login:', err);
       Alert.alert('Erro inesperado', 'Tente novamente mais tarde.');
     }
-  };
+  };//mensagem de alerta não funciona
 
   return (
     <View style={styles.container}>
@@ -74,7 +74,8 @@ const LoginScreen = ({ navigation }) => {
       />
       <View style={styles.buttonContainer}>
         <Button title="Entrar" onPress={handleLogin} color="#2a9d8f" />
-      </View>
+      </View>//aqui deveria ir para a pagina do feed 
+
       <View style={styles.buttonContainer}>
         <Button
           title="Cadastrar-se"
