@@ -18,11 +18,17 @@ const CadastroScreen = ({ navigation }) => {
       console.log('Validando se o usuário já existe no banco...');
 
       // Verificar se o e-mail já está registrado
-      const { data: emailExists } = await supabase
+      const { data: emailExists, error: emailError } = await supabase
         .from('users')
-        .select('*')
+        .select('id')
         .eq('email', email)
-        .single();
+        .maybeSingle();
+
+      if (emailError) {
+        Alert.alert('Erro', 'Erro ao verificar e-mail.');
+        console.error(emailError);
+        return;
+      }
 
       if (emailExists) {
         Alert.alert('Erro', 'E-mail já cadastrado. Use outro e-mail.');
@@ -30,11 +36,17 @@ const CadastroScreen = ({ navigation }) => {
       }
 
       // Verificar se o nome de usuário já está registrado
-      const { data: usernameExists } = await supabase
+      const { data: usernameExists, error: usernameError } = await supabase
         .from('users')
-        .select('*')
+        .select('id')
         .eq('username', username)
-        .single();
+        .maybeSingle();
+
+      if (usernameError) {
+        Alert.alert('Erro', 'Erro ao verificar nome de usuário.');
+        console.error(usernameError);
+        return;
+      }
 
       if (usernameExists) {
         Alert.alert('Erro', 'Nome de usuário já cadastrado. Escolha outro.');
@@ -43,7 +55,7 @@ const CadastroScreen = ({ navigation }) => {
 
       console.log('Iniciando cadastro do usuário...');
 
-      // Criação do usuário no sistema de autenticação do Supabase
+      // Criar o usuário no sistema de autenticação do Supabase
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email,
         password,
@@ -54,17 +66,17 @@ const CadastroScreen = ({ navigation }) => {
         return;
       }
 
-      const userId = authData.user?.id;
-
-      if (!userId) {
-        Alert.alert('Erro', 'Falha ao obter o ID do usuário.');
+      if (!authData?.user) {
+        Alert.alert('Erro', 'Erro ao criar o usuário.');
         return;
       }
 
-      // Inserindo dados adicionais na tabela "users"
-      const { error: dbError } = await supabase.from('users').insert([
-        { id: userId, name, username, email },
-      ]);
+      const userId = authData.user.id;
+
+      // Inserir dados adicionais na tabela "users"
+      const { error: dbError } = await supabase
+        .from('users')
+        .insert([{ id: userId, name, username, email }]);
 
       if (dbError) {
         Alert.alert('Erro ao salvar informações adicionais', dbError.message);
@@ -74,7 +86,7 @@ const CadastroScreen = ({ navigation }) => {
       Alert.alert('Sucesso', 'Cadastro realizado com sucesso!');
       navigation.navigate('Login');
     } catch (err) {
-      Alert.alert('Erro', 'Erro inesperado. Tente novamente.');
+      Alert.alert('Erro inesperado', err.message || 'Erro desconhecido.');
       console.error('Erro no cadastro:', err);
     }
   };
