@@ -13,14 +13,14 @@ const LoginScreen = ({ navigation }) => {
     }
 
     try {
-      let authResponse;
+      let data, error;
 
       if (input.includes('@')) {
         // Login com e-mail
-        authResponse = await supabase.auth.signInWithPassword({
+        ({ data, error } = await supabase.auth.signInWithPassword({
           email: input.trim(),
           password: password.trim(),
-        }); //email não está vereficando
+        }));
       } else {
         // Login com nome de usuário
         const { data: user, error: userError } = await supabase
@@ -30,18 +30,26 @@ const LoginScreen = ({ navigation }) => {
           .single();
 
         if (userError || !user) {
-          Alert.alert('Erro', 'Nome de usuário não encontrado.');
+          console.error('Erro ao buscar usuário:', userError);
+          Alert.alert('Erro', 'Usuário não encontrado.');
           return;
-        }// esse com usuario não esta funcionando
+        }
 
-        authResponse = await supabase.auth.signInWithPassword({
+        ({ data, error } = await supabase.auth.signInWithPassword({
           email: user.email,
           password: password.trim(),
-        });
+        }));
       }
 
-      if (authResponse.error) {
-        Alert.alert('Erro', authResponse.error.message || 'Erro desconhecido.');
+      if (error) {
+        if (error.message.includes('Email not confirmed')) {
+          Alert.alert(
+            'Erro de autenticação',
+            'Seu email não foi confirmado. Verifique sua caixa de entrada para confirmar o email antes de fazer login.'
+          );
+        } else {
+          Alert.alert('Erro', error.message || 'Erro desconhecido.');
+        }
         return;
       }
 
@@ -51,7 +59,7 @@ const LoginScreen = ({ navigation }) => {
       console.error('Erro no login:', err);
       Alert.alert('Erro inesperado', 'Tente novamente mais tarde.');
     }
-  };//mensagem de alerta não funciona
+  };
 
   return (
     <View style={styles.container}>
@@ -74,8 +82,7 @@ const LoginScreen = ({ navigation }) => {
       />
       <View style={styles.buttonContainer}>
         <Button title="Entrar" onPress={handleLogin} color="#2a9d8f" />
-      </View>//aqui deveria ir para a pagina do feed 
-
+      </View>
       <View style={styles.buttonContainer}>
         <Button
           title="Cadastrar-se"
