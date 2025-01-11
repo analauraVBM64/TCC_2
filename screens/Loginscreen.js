@@ -54,7 +54,7 @@ const LoginScreen = ({ navigation }) => {
       }
 
       Alert.alert('Sucesso', 'Login realizado com sucesso!');
-      navigation.navigate('Feed');
+      navigation.navigate('Main');
     } catch (err) {
       console.error('Erro no login:', err);
       Alert.alert('Erro inesperado', 'Tente novamente mais tarde.');
