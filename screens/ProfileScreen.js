@@ -14,6 +14,7 @@ const ProfileScreen = ({ navigation }) => {
 
       if (!user) {
         Alert.alert('Erro', 'Usuário não autenticado');
+        navigation.navigate('Login'); // Redireciona para a tela de login
         return;
       }
 
@@ -25,12 +26,12 @@ const ProfileScreen = ({ navigation }) => {
         .single(); // Retorna um único item (usuário)
 
       if (error) {
-        Alert.alert('Erro', 'Erro ao carregar dados do perfil.');
+        Alert.alert('Erro', `Erro ao carregar dados do perfil: ${error.message}`);
       } else {
         setUserData(data); // Atualiza os dados do usuário no estado
       }
     } catch (error) {
-      Alert.alert('Erro', 'Erro ao buscar dados do perfil.');
+      Alert.alert('Erro', `Erro ao buscar dados do perfil: ${error.message}`);
     } finally {
       setLoading(false); // Finaliza o loading
     }
