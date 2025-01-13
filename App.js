@@ -41,7 +41,7 @@ const MainTabs = () => (
     }}
   >
     <Tab.Screen
-      name="Feed"
+      name="home"
       component={FeedScreen}
       options={{ tabBarLabel: 'Feed' }}
     />

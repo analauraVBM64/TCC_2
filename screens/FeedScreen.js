@@ -1,21 +1,26 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, FlatList, StyleSheet,Button } from 'react-native';
+import { View, Text, FlatList, StyleSheet, Button } from 'react-native';
 import { fetchFeed } from '../services/supabaseService';
-import supabase from '../BD/supabaseClient';
 
 const FeedScreen = () => {
   const [posts, setPosts] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const loadFeed = async () => {
+    setLoading(true);
+    try {
+      const data = await fetchFeed();
+      setPosts(data);
+      setError(null); // Limpa erros anteriores
+    } catch (err) {
+      setError('Erro ao carregar o feed. Tente novamente mais tarde.');
+    } finally {
+      setLoading(false); // Finaliza o carregamento
+    }
+  };
 
   useEffect(() => {
-    const loadFeed = async () => {
-      try {
-        const data = await fetchFeed();
-        setPosts(data);
-      } catch (error) {
-        console.error('Erro ao carregar o feed:', error);
-      }
-    };
-
     loadFeed();
   }, []);
 
@@ -25,6 +30,31 @@ const FeedScreen = () => {
       <Text style={styles.timestamp}>{item.created_at}</Text>
     </View>
   );
+
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <Text>Carregando...</Text>
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.container}>
+        <Text style={{ color: 'red' }}>{error}</Text>
+        <Button title="Recarregar" onPress={loadFeed} color="#2a9d8f" />
+      </View>
+    );
+  }
+
+  if (posts.length === 0) {
+    return (
+      <View style={styles.container}>
+        <Text>Nenhum post encontrado.</Text>
+      </View>
+    );
+  }
 
   return (
     <FlatList
