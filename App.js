@@ -5,13 +5,15 @@ import { View, Text, StyleSheet } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createStackNavigator } from '@react-navigation/stack';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import FontAwesome from 'react-native-vector-icons/FontAwesome';
+import Ionicons from 'react-native-vector-icons/Ionicons';
 import LoginScreen from './screens/Loginscreen';
 import FeedScreen from './screens/FeedScreen';
 import ProfileScreen from './screens/ProfileScreen';
 import PostScreen from './screens/PostScreen';
 import SettingsScreen from './screens/Settingsscreen';
 import CadastroScreen from './screens/CadastroScreen';
-import { supabase } from './BD/supabaseClient'; // Certifique-se de que este arquivo está correto
+import { supabase } from './BD/supabaseClient'; // Verifique se este arquivo está correto
 
 const Stack = createStackNavigator();
 const Tab = createBottomTabNavigator();
@@ -41,24 +43,48 @@ const MainTabs = () => (
     }}
   >
     <Tab.Screen
-      name="home"
+      name="Feed"
       component={FeedScreen}
-      options={{ tabBarLabel: 'Feed' }}
+      options={{
+        tabBarLabel: 'Feed',
+        tabBarIcon: ({ color, size }) => (
+          <Ionicons name="home-sharp" color={color} size={size} />
+        ),
+        headerShown: false,
+      }}
     />
     <Tab.Screen
       name="Post"
       component={PostScreen}
-      options={{ tabBarLabel: 'Nova Postagem' }}
+      options={{
+        tabBarLabel: 'Nova Postagem',
+        tabBarIcon: ({ color, size }) => (
+          <FontAwesome name="plus-square" color={color} size={size} />
+        ),
+        headerShown: false,
+      }}
     />
     <Tab.Screen
       name="Profile"
       component={ProfileScreen}
-      options={{ tabBarLabel: 'Perfil' }}
+      options={{
+        tabBarLabel: 'Perfil',
+        tabBarIcon: ({ color, size }) => (
+          <FontAwesome name="user" color={color} size={size} />
+        ),
+        headerShown: false,
+      }}
     />
     <Tab.Screen
       name="Settings"
       component={SettingsScreen}
-      options={{ tabBarLabel: 'Configurações' }}
+      options={{
+        tabBarLabel: 'Configurações',
+        tabBarIcon: ({ color, size }) => (
+          <Ionicons name="settings-sharp" color={color} size={size} />
+        ),
+        headerShown: false,
+      }}
     />
   </Tab.Navigator>
 );
@@ -87,7 +113,7 @@ const App = () => {
           name="Main"
           component={MainTabs}
           options={{
-            headerShown: false, 
+            headerShown: false,
           }}
         />
       </Stack.Navigator>

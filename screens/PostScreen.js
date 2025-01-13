@@ -28,23 +28,27 @@ const PostScreen = ({ navigation }) => {
   const uploadImage = async () => {
     if (!imageUri) return null;
 
-    const imageName = `post-images/${Date.now()}.jpg`;
-    const response = await fetch(imageUri);
-    const blob = await response.blob();
+    try {
+      const imageName = `post-images/${Date.now()}.jpg`;
+      const response = await fetch(imageUri);
+      const blob = await response.blob();
 
-    const { data, error } = await supabase.storage
-      .from('post-images')
-      .upload(imageName, blob, {
-        contentType: 'image/jpeg',
-      });
+      const { data, error } = await supabase.storage
+        .from('post-images')
+        .upload(imageName, blob, {
+          contentType: 'image/jpeg',
+        });
 
-    if (error) {
+      if (error) {
+        throw error;
+      }
+
+      const { publicUrl } = supabase.storage.from('post-images').getPublicUrl(imageName);
+      return publicUrl;
+    } catch (error) {
       Alert.alert('Erro', 'Falha ao fazer upload da imagem.');
       return null;
     }
-
-    const { publicUrl } = supabase.storage.from('post-images').getPublicUrl(imageName);
-    return publicUrl;
   };
 
   // Função para criar nova postagem
@@ -56,22 +60,24 @@ const PostScreen = ({ navigation }) => {
 
     const imageUrl = await uploadImage();
 
-    const { data, error } = await supabase
-      .from('posts')
-      .insert([
-        {
-          text: content.trim(),
-          image_url: imageUrl,
-        },
-      ]);
+    try {
+      const { data, error } = await supabase
+        .from('posts')
+        .insert([
+          {
+            text: content.trim(),
+            image_url: imageUrl,
+          },
+        ]);
 
-    if (error) {
-      Alert.alert('Erro', 'Falha ao criar publicação.');
-    } else {
+      if (error) throw error;
+
       Alert.alert('Sucesso', 'Publicação criada com sucesso!');
       setContent('');
       setImageUri(null);
       navigation.navigate('Feed');
+    } catch (error) {
+      Alert.alert('Erro', 'Falha ao criar publicação.');
     }
   };
 
