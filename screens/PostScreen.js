@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, Button, Image, StyleSheet, Alert } from 'react-native';
 import * as ImagePicker from 'react-native-image-picker';
 import { supabase } from '../BD/supabaseClient';
@@ -6,6 +6,24 @@ import { supabase } from '../BD/supabaseClient';
 const PostScreen = ({ navigation }) => {
   const [content, setContent] = useState('');
   const [imageUri, setImageUri] = useState(null);
+  const [user, setUser] = useState(null);
+
+  // Buscar informações do usuário autenticado
+  const fetchUser = async () => {
+    const { data: user, error } = await supabase.auth.getUser();
+
+    if (error) {
+      Alert.alert('Erro', 'Falha ao obter informações do usuário.');
+      navigation.navigate('Login'); // Redirecionar para o login se não autenticado
+      return;
+    }
+
+    setUser(user);
+  };
+
+  useEffect(() => {
+    fetchUser();
+  }, []);
 
   // Função para selecionar imagem
   const selectImage = () => {
@@ -67,6 +85,7 @@ const PostScreen = ({ navigation }) => {
           {
             text: content.trim(),
             image_url: imageUrl,
+            user_id: user.id, // Associando o post ao ID do usuário
           },
         ]);
 
@@ -81,9 +100,18 @@ const PostScreen = ({ navigation }) => {
     }
   };
 
+  if (!user) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.title}>Carregando informações do usuário...</Text>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <Text style={styles.title}>Nova Publicação</Text>
+      <Text style={styles.subtitle}>Olá, {user.user_metadata.full_name || user.email}!</Text>
       <TextInput
         style={styles.input}
         placeholder="Escreva sua publicação..."
@@ -107,8 +135,14 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: 'bold',
+    marginBottom: 10,
+    textAlign: 'center',
+  },
+  subtitle: {
+    fontSize: 18,
     marginBottom: 20,
     textAlign: 'center',
+    color: '#555',
   },
   input: {
     borderWidth: 1,

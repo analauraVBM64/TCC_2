@@ -5,57 +5,64 @@ import { supabase } from '../BD/supabaseClient';
 const ProfileScreen = ({ navigation }) => {
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(true);
 
-  // Função para buscar informações do perfil no banco de dados
+  // Função para buscar informações do perfil
   const fetchUserProfile = async () => {
     try {
-      // Obtendo o usuário logado
-      const user = supabase.auth.user();
+      // Obtendo o usuário autenticado
+      const { data: { user }, error: authError } = await supabase.auth.getUser();
 
-      if (!user) {
-        Alert.alert('Erro', 'Usuário não autenticado');
-        navigation.navigate('Login'); // Redireciona para a tela de login
+      if (authError || !user) {
+        setIsAuthenticated(false);
+        navigation.navigate('Login'); // Redireciona para login se não autenticado
         return;
       }
 
-      // Consultando os dados do usuário na tabela "users"
+      // Consultando os dados do usuário no banco
       const { data, error } = await supabase
-        .from('users') // Substitua 'users' pelo nome da sua tabela
-        .select('name, email') // Campos que você quer retornar (exemplo: 'name', 'email')
+        .from('users') // Certifique-se de que esta tabela existe no banco
+        .select('name, email') // Ajuste os campos conforme necessário
         .eq('id', user.id)
-        .single(); // Retorna um único item (usuário)
+        .single();
 
       if (error) {
-        Alert.alert('Erro', `Erro ao carregar dados do perfil: ${error.message}`);
+        Alert.alert('Erro', `Erro ao carregar perfil: ${error.message}`);
       } else {
-        setUserData(data); // Atualiza os dados do usuário no estado
+        setUserData(data);
       }
     } catch (error) {
-      Alert.alert('Erro', `Erro ao buscar dados do perfil: ${error.message}`);
+      Alert.alert('Erro', `Erro inesperado: ${error.message}`);
     } finally {
-      setLoading(false); // Finaliza o loading
+      setLoading(false);
     }
   };
 
-  // Usando useEffect para carregar o perfil assim que o componente for montado
   useEffect(() => {
     fetchUserProfile();
   }, []);
 
-  // Se estiver carregando, exibe uma mensagem
-  if (loading) {
+  if (!isAuthenticated) {
     return (
       <View style={styles.container}>
-        <Text style={styles.title}>Carregando...</Text>
+        <Text style={styles.title}>Redirecionando para o login...</Text>
       </View>
     );
   }
 
-  // Se não houver dados de usuário
+  if (loading) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.title}>Carregando perfil...</Text>
+      </View>
+    );
+  }
+
   if (!userData) {
     return (
       <View style={styles.container}>
-        <Text style={styles.title}>Erro ao carregar perfil</Text>
+        <Text style={styles.title}>Erro ao carregar perfil.</Text>
+        <Button title="Tentar Novamente" onPress={fetchUserProfile} />
       </View>
     );
   }
@@ -65,8 +72,14 @@ const ProfileScreen = ({ navigation }) => {
       <Text style={styles.title}>Meu Perfil</Text>
       <Text style={styles.text}>Nome: {userData.name}</Text>
       <Text style={styles.text}>E-mail: {userData.email}</Text>
-      <Button title="Editar Perfil" onPress={() => Alert.alert('Editar', 'Função em desenvolvimento')} />
-      <Button title="Configurações" onPress={() => navigation.navigate('Settings')} />
+      <Button
+        title="Editar Perfil"
+        onPress={() => Alert.alert('Editar', 'Função em desenvolvimento')}
+      />
+      <Button
+        title="Configurações"
+        onPress={() => navigation.navigate('Settings')}
+      />
     </View>
   );
 };
